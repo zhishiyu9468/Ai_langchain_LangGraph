@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Chatbot</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <form class="auth-card" id="loginForm">
+            <h2>Login</h2>
+            <div id="errorMsg" class="error-msg" style="display:none"></div>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" required autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+            <div class="auth-link">
+                No account? <a href="/register.html">Register</a>
+            </div>
+        </form>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        if (isLoggedIn()) {
+            window.location.href = "/index.html";
+        }
+
+        document.getElementById("loginForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const errorEl = document.getElementById("errorMsg");
+            errorEl.style.display = "none";
+
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value;
+
+            try {
+                const data = await apiPost("/api/auth/login", { username, password });
+                setToken(data.access_token);
+                window.location.href = "/index.html";
+            } catch (err) {
+                errorEl.textContent = err.message;
+                errorEl.style.display = "block";
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="chat-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>Conversations</h3>
+                <button class="btn btn-primary btn-sm" id="btnNewChat">+ New Chat</button>
+            </div>
+            <div class="conversation-list" id="conversationList"></div>
+            <div class="sidebar-footer">
+                <span class="username" id="sidebarUsername"></span>
+                <button class="btn btn-danger btn-sm" id="btnLogout">Logout</button>
+            </div>
+        </aside>
+        <main class="chat-main">
+            <div class="chat-header" id="chatHeaderTitle">Chat</div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="empty-state">
+                    <div class="icon">&#x1F4AC;</div>
+                    <p>Select or create a conversation</p>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="Type a message..." autofocus>
+                <button class="btn btn-primary" id="btnSend">Send</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/chat.js"></script>
+</body>
+</html>

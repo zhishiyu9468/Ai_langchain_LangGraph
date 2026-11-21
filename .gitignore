@@ -1,0 +1,24 @@
+# PyCharm 本机配置
+.idea/
+
+# Python 虚拟环境与缓存
+.venv/
+__pycache__/
+*.pyc
+
+# 前端依赖与构建产物（源码仍会上传）
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Notebook 临时检查点
+.ipynb_checkpoints/
+
+# 真实环境配置不上传
+.env
+.env.*
+
+# 保留不含真实密钥的配置模板
+!.env.example
+/资料_langchain实战项目/05.模型/
+/资料_langchain实战项目/06.其它软件/
