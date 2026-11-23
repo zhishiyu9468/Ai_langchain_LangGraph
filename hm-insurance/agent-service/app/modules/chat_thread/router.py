@@ -25,7 +25,7 @@ async def create_chat_thread(
     ChatThreadResponse.model_validate(response)
     return response
 
-@router.get("",response_model=ChatThreadResponse)
+@router.get("",response_model=list[ChatThreadResponse])
 async def list_chat_threads(
         user_id: Annotated[int, Header(alias="x-user-id")],
         service:ChatThreadService=Depends(get_service)

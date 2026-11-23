@@ -18,6 +18,7 @@ async def chat(
         request:ChatRequest,
         user_id:Annotated[int,Header(alias="x-user-id")],
         service:ChatService = Depends(get_chat_service)
-)->str:
-    response =await service.chat_stream(user_id,request)
-    return response
+):
+    async for see in service.chat_stream(user_id,request):
+        yield see
+
