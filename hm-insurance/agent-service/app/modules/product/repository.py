@@ -29,7 +29,7 @@ class ProductRepository:
             Product.status=="active",
             Product.category==category
         ]
-        if premium_min:
+        if premium_min is not None:
             conditions.append(Product.min_premium<premium_min)
         products=await self.session.scalars(
             select(Product)

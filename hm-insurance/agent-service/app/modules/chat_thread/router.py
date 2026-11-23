@@ -1,19 +1,25 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header
+from fastapi import APIRouter, Depends, Request, Header
+from langgraph.graph.state import CompiledStateGraph
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import Response
 from starlette.status import HTTP_204_NO_CONTENT
 
 from app.infra.database import get_session
 from app.modules.chat_thread.schemas import ChatThreadResponse, ChatThreadCreate
+from app.modules.chat.schemas import ChatHistoryResponse,ChatMessageResponse
 from app.modules.chat_thread.service import ChatThreadService
 
 router = APIRouter(prefix="/api/v1/chat-threads",tags=["chat-threads"])
 
-def get_service(session:AsyncSession=Depends(get_session)):
-    return ChatThreadService(session)
+def get_service(
+        request:Request,
+        session:AsyncSession=Depends(get_session)
+
+):
+    return ChatThreadService(session,request.app.state.agent)
 
 @router.post("",response_model=ChatThreadResponse)
 async def create_chat_thread(
@@ -54,3 +60,11 @@ async def delete_chat_thread(
 )->Response:
     await service.delete(thread_id,user_id)
     return Response(status_code=HTTP_204_NO_CONTENT)
+
+@router.get("/{thread_id}/messages",response_model=ChatHistoryResponse)
+async def get_chat_history(
+        thread_id:UUID,
+        user_id:Annotated[int,Header(alias="x-user-id")],
+        service=Depends(get_service)
+):
+    return await service.get_history(thread_id,user_id)
