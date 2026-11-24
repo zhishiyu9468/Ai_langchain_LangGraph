@@ -5,7 +5,7 @@ from uuid import UUID, uuid4
 from sqlalchemy import BigInteger, ForeignKey, Integer, Numeric, String, Text, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column
-
+from app.modules.user.models import Users
 from app.common.models import Base, CreateAtMixin, UpdateAtMixin
 
 

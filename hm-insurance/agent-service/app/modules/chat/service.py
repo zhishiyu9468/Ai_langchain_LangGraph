@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.modules.chat.schemas import ChatRequest
 from app.modules.chat_thread.exceptions import ChatThreadNotFoundError
 from app.modules.chat_thread.repository import ChatThreadRepository
+from app.agents.schemas import InsuranceAgentContext
 
 
 class ChatService:
@@ -25,11 +26,13 @@ class ChatService:
             raise ChatThreadNotFoundError
         _input={"messages":[HumanMessage(content=request.message)]}
         config = {"configurable": {"thread_id": str(request.thread_id)}}
-
+        context=InsuranceAgentContext(user_id=user_id)
         stream = await self.agent.astream_events(
             _input,
             config,
+            context=context,
             version="v3",
+
         )
 
         # 2.3.只读取消息中的文本增量

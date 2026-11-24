@@ -22,3 +22,4 @@ class InsurancePlanCreate(BaseModel):
     summary: str | None = None
     insured_profile: dict[str, Any] = Field(default_factory=dict)
     items: list[InsurancePlanItemCreate] = Field(min_length=1)
+

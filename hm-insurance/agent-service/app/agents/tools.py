@@ -1,10 +1,18 @@
 from decimal import Decimal
-
 from fastapi.encoders import jsonable_encoder
+from langchain_core.tools import tool
+from langgraph.prebuilt import ToolRuntime
 
 from app.infra.database import AsyncSessionFactory
 from app.modules.product.service import ProductService
 from app.modules.product.models import Product
+
+from app.modules.insurance_plan.schemas import InsurancePlanCreate
+from app.modules.insurance_plan.service import InsurancePlanService
+from app.agents.schemas import InsuranceAgentContext
+
+
+@tool
 async def query_candidate_products(
         categories:list[str],
         premium_min:Decimal|None=None,
@@ -22,4 +30,35 @@ async def query_candidate_products(
         service=ProductService(session)
         products:list[Product]=await service.list_candidates(categories,premium_min,limit_per_category)
         return jsonable_encoder(products)
+
+from sqlalchemy.exc import SQLAlchemyError
+
+@tool
+async def save_insurance_plan(
+    plan: InsurancePlanCreate,
+    runtime: ToolRuntime[InsuranceAgentContext],
+) -> dict[str, str]:
+    """保存当前用户的保险推荐方案。"""
+    try:
+        async with AsyncSessionFactory() as session:
+            service = InsurancePlanService(session)
+            plan_id = await service.create_plan(
+                data=plan,
+                user_id=runtime.context.user_id,
+            )
+    except (SQLAlchemyError, TimeoutError):
+        # 实际项目中同时记录异常日志
+        return {
+            "status": "error",
+            "message": (
+                "无法确认方案保存成功，请核查已有方案。"
+                "不要自动重复保存，也不要回复保存成功。"
+            ),
+        }
+
+    return {
+        "status": "success",
+        "plan_id": str(plan_id),
+        "message": "保险方案保存成功",
+    }
 
