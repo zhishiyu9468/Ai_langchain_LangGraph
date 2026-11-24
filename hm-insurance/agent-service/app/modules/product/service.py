@@ -12,7 +12,7 @@ class ProductService:
         self.session=session
         self.repository=ProductRepository(session)
 
-    async def list_products(self,category:Optional[str])->list[Product]:
+    async def list_products(self,category:str|None=None)->list[Product]:
         return  await self.repository.find_by_category(category)
 
     async def list_candidates(
