@@ -8,7 +8,6 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from langchain_milvus import BM25BuiltInFunction, Milvus
-from langchain_ollama import OllamaEmbeddings
 
 from app.core.config import settings
 from app.core.logging import get_logger
