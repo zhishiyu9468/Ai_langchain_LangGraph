@@ -46,25 +46,56 @@ class ChatThreadService:
             await self.agent.checkpointer.adelete_thread(str(thread_id))
             await self.session.delete(thread)
 
-    async def get_history(self,thread_id:UUID,user_id:int)->ChatHistoryResponse:
-        thread =await self.repository.find_owned(thread_id,user_id)
-        if not thread:
+    async def get_history(
+            self,
+            thread_id: UUID,
+            user_id: int,
+    ) -> ChatHistoryResponse:
+        # 1.校验会话归属
+        thread = await self.repository.find_owned(thread_id, user_id)
+        if thread is None:
             raise ChatThreadNotFoundError
 
-        config:RunnableConfig={"configurable":{"thread_id":str(thread_id)}}
-        snapshot=await self.agent.aget_state(config)
-        messages=[]
-        for message in snapshot.values.get("messages",[]):
-            if isinstance(message,HumanMessage):
-                role="user"
-            elif isinstance(message,AIMessage):
-                role="assistant"
+        # 2.读取Agent最新状态
+        config = {"configurable": {"thread_id": str(thread_id)}}
+        snapshot = await self.agent.aget_state(config)
+
+        # 3.读取additional_info
+        additional_infos = snapshot.values.get("additional_info", {})
+
+        # 4.处理消息历史
+        messages = []
+        for message in snapshot.values.get("messages", []):
+            # 4.1.只保留用户消息和AI消息
+            if isinstance(message, HumanMessage):
+                role = "user"
+            elif isinstance(message, AIMessage):
+                role = "assistant"
             else:
                 continue
 
+            # 4.2.组装信息
             if message.text:
-                messages.append(ChatMessageResponse(role=role,content=message.text))
+                messages.append(
+                    ChatMessageResponse(
+                        role=role,
+                        content=message.text,
+                        additional_info=additional_infos.get(message.id),
+                    )
+                )
+
+        # 5.处理interrupt
+        interrupts = None
+        if hasattr(snapshot, 'interrupts') and snapshot.interrupts:
+            interrupts = snapshot.interrupts
+        elif hasattr(snapshot, 'tasks') and snapshot.tasks:
+            for task in snapshot.tasks:
+                if hasattr(task, 'interrupts') and task.interrupts:
+                    interrupts = task.interrupts
+                    break
+
         return ChatHistoryResponse(
             thread_id=thread_id,
-            messages=messages
+            messages=messages,
+            interrupt=interrupts[0].value if interrupts else None
         )

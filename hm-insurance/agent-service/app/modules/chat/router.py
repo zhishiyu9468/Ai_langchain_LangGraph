@@ -19,6 +19,6 @@ async def chat(
         user_id:Annotated[int,Header(alias="x-user-id")],
         service:ChatService = Depends(get_chat_service)
 ):
-    async for see in service.chat_stream(user_id,request):
+    async for see in service.stream_chat(user_id,request):
         yield see
 

@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 
 from starlette.responses import JSONResponse
 
+from app.agents.orchestrator import init_insurance_orchestrator
 from app.core.exceptions import ApplicationError
 from app.modules.chat_thread.router import router as chat_thread_router
 from app.modules.chat.router import router as chat_router
@@ -18,7 +19,7 @@ from app.infra.checkpointer import (
     close_checkpointer,
     init_checkpointer,
 )
-from app.agents.insurance_advisor import init_insurance_agent
+from app.agents.insurance_advisor import init_insurance_advisor
 #初始化日志系统
 configure_logging(settings.logging.level)
 logger=get_logger(__name__)
@@ -30,6 +31,7 @@ async def lifespan(app: FastAPI):
     logger.info(f"【{settings.app.name}】应用启动中...")
 
     from app.infra.database import check_database, close_database
+    from app.rag import close_rag  # 导入模块就会初始化
 
     try:
         # 1.检查业务数据库连接
@@ -39,12 +41,12 @@ async def lifespan(app: FastAPI):
         checkpointer = await init_checkpointer()
 
         # 3.初始化保险顾问Agent
-        app.state.agent = init_insurance_agent(checkpointer)
+        app.state.agent = init_insurance_orchestrator(checkpointer)
 
         yield
     finally:
         logger.info("应用关闭中... ")
-
+        close_rag()
         # 4.关闭Checkpointer连接池
         await close_checkpointer()
 
@@ -85,6 +87,6 @@ if __name__ == "__main__":
         "app.main:app",
         host=settings.app.host,
         port=settings.app.port,
-        reload=True,
+        reload=False,
         loop= "asyncio:SelectorEventLoop" if sys.platform == "win32" else "auto",
     )
